@@ -6,18 +6,16 @@ CFLAGS = -O0 -Wall -I . -g
 # Others systems will probably require something different.
 LIB = -lpthread
 
-all: tiny cgi
+all: echo echoclient
 
-tiny: tiny.c csapp.o
-	$(CC) $(CFLAGS) -o tiny tiny.c csapp.o $(LIB)
+echo: echo.c csapp.o
+	$(CC) $(CFLAGS) -o echo echo.c csapp.o $(LIB)
+
+echoclient: echoclient.c csapp.o
+	$(CC) $(CFLAGS) -o echoclient echoclient.c csapp.o $(LIB)
 
 csapp.o: csapp.c
 	$(CC) $(CFLAGS) -c csapp.c
 
-cgi:
-	(cd cgi-bin; make)
-
 clean:
-	rm -f *.o tiny *~
-	(cd cgi-bin; make clean)
-
+	rm -f *.o echo echoclient *~d
