@@ -1,0 +1,72 @@
+Tiny Web server
+Dave O'Hallaron
+Carnegie Mellon University
+
+This is the home directory for the Tiny server, a 200-line Web
+server that we use in "15-213: Intro to Computer Systems" at Carnegie
+Mellon University.  Tiny uses the GET method to serve static content
+(text, HTML, GIF, and JPG files) out of ./ and to serve dynamic
+content by running CGI programs out of ./cgi-bin. The default 
+page is home.html (rather than index.html) so that we can view
+the contents of the directory from a browser.
+
+Tiny is neither secure nor complete, but it gives students an
+idea of how a real Web server works. Use for instructional purposes only.
+
+The code compiles and runs cleanly using gcc 2.95.3 
+on a Linux 2.2.20 kernel.
+
+To install Tiny:
+   Type "tar xvf tiny.tar" in a clean directory. 
+
+To run Tiny:
+   Run "tiny <port>" on the server machine, 
+	e.g., "tiny 8000".
+   Point your browser at Tiny: 
+	static content: http://<host>:8000
+	dynamic content: http://<host>:8000/cgi-bin/adder?1&2
+
+Files:
+  tiny.tar		Archive of everything in this directory
+  tiny.c		The Tiny server
+  Makefile		Makefile for tiny.c
+  home.html		Test HTML page
+  godzilla.gif		Image embedded in home.html
+  README		This file	
+  cgi-bin/adder.c	CGI program that adds two numbers
+  cgi-bin/Makefile	Makefile for adder.c
+
+// 실행방법
+cd echo 파일 먼저들어가기
+
+// PID 파일이 있으면 지우기 (있어도 상관없음)
+rm -f echoserveri.pid
+
+//echoserveri가 없다면 echo.o가 이미 있으니 echo.o + csapp.o를 링크하여 echoserveri를 만듭니다:
+gcc -O0 -Wall -I . -g -o echoserveri echo.o csapp.o -lpthread
+(만약 echo.o가 없으면 gcc -O0 -Wall -I . -g -c echo.c 먼저 실행하세요)
+
+//실행파일 확인 / 실행
+ls -l echoserveri
+
+// 포트 8000으로 백그라운드 실행하고 PID 저장
+./echoserveri 8000 & 
+echo $! > echoserveri.pid
+
+//서버가 잘 뜨는지 확인 //리스닝 중인지 확인
+ss -ltnp | grep ':8000'
+
+// echoclient가 있으면:
+
+./echoclient localhost 8000
+
+// 실행후 터미널에 아무거나 치기
+
+//아니면 또는 netcat으로 간단 테스트
+echo "hello world" | nc localhost 8000
+//위에꺼 안하고 이걸치면 hello world 출력이됨
+
+//서버중지
+kill $(cat echoserveri.pid) 2>/dev/null || pkill -f echoserveri
+// pid 기록지우기
+rm -f echoserveri.pid
