@@ -11,7 +11,7 @@
 void doit(int fd);
 void read_requesthdrs(rio_t* rp);
 int parse_uri(char* uri, char* filename, char* cgiargs);
-void serve_static(int fd, char* filename, int filesize);
+void serve_static(int fd, char* filename, int filesize, int is_head);
 void get_filetype(char* filename, char* filetype);
 void serve_dynamic(int fd, char* filename, char* cgiargs);
 void clienterror(int fd, char* cause, char* errnum, char* shortmsg,
@@ -56,10 +56,11 @@ int main(int argc, char** argv)
 
 // 클라이언트(웹브라우저 등)가 보낸 HTTP 요청을 받아서
 // 요청에 따라 알맞은 파일이나 프로그램(CGI)을 실행해서 
-// 결과를 클라이언트에게 돌려주는 함수입니다.
+// 결과를 클라이언트에게 돌려주는 함수
 void doit(int fd)
 {
     int is_static;
+    int is_head = 0;
     struct stat sbuf;
     char buf[MAXLINE], method[MAXLINE], uri[MAXLINE], version[MAXLINE];
     char filename[MAXLINE], cgiargs[MAXLINE];
@@ -74,15 +75,24 @@ void doit(int fd)
     // 요청 라인 출력 (디버깅용)
     printf("Request line: %s", buf);
 
+    // GET /index.html HTTP/1.1\r\n
+    // GET http://localhost:12345/index.html HTTP/1.1\r\n (프록시 요청)
+    // HEAD /image.png HTTP/1.0\r\n
     // 요청 라인을 method, uri, version으로 분리해서 저장
     sscanf(buf, "%s %s %s", method, uri, version);
 
     // 지원하지 않는 HTTP 메서드일 경우 에러 메시지 전송 후 함수 종료
-    if (strcasecmp(method, "GET"))
+    // -> 11.11 HEAD 추가
+    if (strcasecmp(method, "HEAD") == 0)
+    {
+        is_head = 1;
+    }
+    else if (strcasecmp(method, "GET"))
     {
         clienterror(fd, method, "501", "Not implemented", "Tiny does not implement this method");
         return;
     }
+
 
     // 추가적인 요청 헤더(Host, User-Agent 등) 읽어서 무시 (기능 확장 가능)
     read_requesthdrs(&rio);
@@ -108,7 +118,7 @@ void doit(int fd)
             return;
         }
         // 정적 파일을 클라이언트에게 전송
-        serve_static(fd, filename, sbuf.st_size);
+        serve_static(fd, filename, sbuf.st_size, is_head);
     }
     // 요청이 동적 컨텐츠(CGI 프로그램 실행)일 경우
     else
@@ -153,51 +163,38 @@ void read_requesthdrs(rio_t* rp)
 // 해당 컨텐츠를 가져오거나 실행하기 위한 파일 경로와 인자(cgiargs)를 추출하는 함수
 int parse_uri(char* uri, char* filename, char* cgiargs)
 {
-    char* ptr;
-
-    // URI에 "cgi-bin"이 없으면 정적 컨텐츠로 간주
-    if (!strstr(uri, "cgi-bin"))
+    if (strstr(uri, "cgi-bin") == NULL)
     {
-        // CGI 인자 문자열을 빈 값으로 초기화
         strcpy(cgiargs, "");
-
-        // 파일 경로를 현재 디렉터리(.)로 시작하여 URI를 이어 붙임
         strcpy(filename, ".");
         strcat(filename, uri);
 
-        // 만약 URI가 '/'로 끝나면 기본 파일로 "home.html"을 추가
+        // '/'로 끝나는 경우만 home.html 붙임
         if (uri[strlen(uri) - 1] == '/')
-        {
             strcat(filename, "home.html");
-            return 1; // 정적 컨텐츠임을 반환
-        }
-        // 그렇지 않은 경우(동적 컨텐츠, 즉 CGI 프로그램)
-        else
-        {
-            // URI에 '?'가 있으면 이후 부분을 cgiargs에 저장 (쿼리 인자)
-            ptr = index(uri, '?'); // strchr(uri, '?')
-            if (ptr)
-            {
-                strcpy(cgiargs, ptr + 1); // '?' 이후 문자열을 cgiargs에 저장
-                *ptr = '\0';            // URI에서 '?'를 '\0'으로 바꿔서 실제 파일 경로만 남김
-            }
-            else
-            {
-                // '?'가 없으면 cgiargs는 빈 문자열
-                strcpy(cgiargs, "");
-            }
 
-            // 파일 경로를 다시 현재 디렉터리(.)와 URI로 초기화
-            strcpy(filename, ".");
-            strcat(filename, uri);
-            return 0; // 동적 컨텐츠임을 반환
+        return 1; // 항상 정적 컨텐츠!
+    }
+    else
+    {
+        // 동적 컨텐츠 (cgi-bin)
+        char* ptr = index(uri, '?');
+        if (ptr)
+        {
+            strcpy(cgiargs, ptr + 1);
+            *ptr = '\0';
         }
+        else
+            strcpy(cgiargs, "");
+        strcpy(filename, ".");
+        strcat(filename, uri);
+        return 0;
     }
 }
 
 // 정적 컨텐츠(HTML, 이미지, 텍스트 등 일반 파일)를 
 // 클라이언트(웹브라우저)에게 전송하는 함수
-void serve_static(int fd, char* filename, int filesize)
+void serve_static(int fd, char* filename, int filesize, int is_head)
 {
     int srcfd;
     char* srcp, filetype[MAXLINE];
@@ -233,15 +230,23 @@ void serve_static(int fd, char* filename, int filesize)
 
     // 작성한 응답 헤더를 클라이언트에게 전송
     Rio_writen(fd, buf, strlen(buf));
-    printf("Response headers:\n");
-    printf("%s", buf);
+    printf("Response headers:\n%s", buf);
 
-    // 요청한 파일을 읽어서 클라이언트에게 전송
-    srcfd = Open(filename, O_RDONLY, 0); // 파일 열기
-    srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0); // 파일을 메모리에 매핑
-    Close(srcfd); // 파일 디스크립터 닫기
-    Rio_writen(fd, srcp, filesize);
-    Munmap(srcp, filesize); // 메모리 매핑 해제
+    if (!is_head)
+    {
+        // 요청한 파일을 읽어서 클라이언트에게 전송
+        srcfd = Open(filename, O_RDONLY, 0); // 파일 열기
+
+        // srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0); // 파일을 메모리에 매핑
+        srcp = (char*)malloc(filesize);
+        Rio_readn(srcfd, srcp, filesize);
+
+        Close(srcfd); // 파일 디스크립터 닫기
+        Rio_writen(fd, srcp, filesize);
+
+        // Munmap(srcp, filesize); // 메모리 매핑 해제
+        free(srcp);
+    }
 }
 
 
@@ -266,6 +271,16 @@ void get_filetype(char* filename, char* filetype)
     {
         strcpy(filetype, "image/jpeg");
     }
+    // 11.7 Expand to MPG
+    else if (strstr(filename, ".mpg"))
+    {
+        strcpy(filetype, "video/mpeg");
+    }
+    else if (strstr(filename, ".mp4"))
+    {
+        strcpy(filetype, "video/mp4");
+    }
+    //
     else
     {
         strcpy(filetype, "text/plain");
