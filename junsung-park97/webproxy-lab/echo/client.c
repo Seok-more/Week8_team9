@@ -1,5 +1,6 @@
 #include "csapp.h"
                 
+// 테스트입니다.
 int main (int argc, char **argv) {
   int clientfd;
   char* host, *port, buf[MAXLINE];
