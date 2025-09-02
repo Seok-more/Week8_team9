@@ -1,0 +1,117 @@
+clientaddr=0x7ffc0a454820, clientlen=16
+Accepted connection from (localhost, 38746)
+rio=0x7ffc0a4467d0, request line: GET /home.html HTTP/1.1
+Request headers:
+GET /home.html HTTP/1.1
+Host: localhost:8000
+Connection: keep-alive
+sec-ch-ua: "Chromium";v="138", "Whale";v="4", "Not.A/Brand";v="99"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Windows"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Whale/4.33.325.17 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
+
+HTTP/1.0 200 OK
+Response headers : 
+HTTP/1.0 200 OK
+Server: Tiny Web Server
+Connection : close
+Content-length : 127
+Content-type : text/html
+
+clientaddr=0x7ffc0a454820, clientlen=16
+Accepted connection from (localhost, 38756)
+rio=0x7ffc0a4467d0, request line: GET /godzilla.gif HTTP/1.1
+Request headers:
+GET /godzilla.gif HTTP/1.1
+Host: localhost:8000
+Connection: keep-alive
+sec-ch-ua-platform: "Windows"
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Whale/4.33.325.17 Safari/537.36
+sec-ch-ua: "Chromium";v="138", "Whale";v="4", "Not.A/Brand";v="99"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8000/home.html
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
+
+HTTP/1.0 200 OK
+Response headers : 
+HTTP/1.0 200 OK
+Server: Tiny Web Server
+Connection : close
+Content-length : 12155
+Content-type : imaage/gif
+
+clientaddr=0x7ffc0a454820, clientlen=16
+Accepted connection from (localhost, 38758)
+rio=0x7ffc0a4467d0, request line: GET / HTTP/1.1
+Request headers:
+GET / HTTP/1.1
+Host: localhost:8000
+Connection: keep-alive
+sec-ch-ua: "Chromium";v="138", "Whale";v="4", "Not.A/Brand";v="99"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Windows"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Whale/4.33.325.17 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
+
+HTTP/1.0 200 OK
+Response headers : 
+HTTP/1.0 200 OK
+Server: Tiny Web Server
+Connection : close
+Content-length : 127
+Content-type : text/html
+
+clientaddr=0x7ffc0a454820, clientlen=16
+Accepted connection from (localhost, 46592)
+rio=0x7ffc0a4467d0, request line: GET /godzilla.gif HTTP/1.1
+Request headers:
+GET /godzilla.gif HTTP/1.1
+Host: localhost:8000
+Connection: keep-alive
+sec-ch-ua-platform: "Windows"
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Whale/4.33.325.17 Safari/537.36
+sec-ch-ua: "Chromium";v="138", "Whale";v="4", "Not.A/Brand";v="99"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8000/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
+
+HTTP/1.0 200 OK
+Response headers : 
+HTTP/1.0 200 OK
+Server: Tiny Web Server
+Connection : close
+Content-length : 12155
+Content-type : imaage/gif
+
+clientaddr=0x7ffc0a454820, clientlen=16
+Accepted connection from (localhost, 40370)
+rio=0x7ffc0a4467d0, request line: GET /home.html HTTP/1.1
+Request headers:
+GET /home.html HTTP/1.1
+Host: 127.0.0.1:8000
+Connec

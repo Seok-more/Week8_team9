@@ -1,0 +1,72 @@
+Tiny Web server
+Dave O'Hallaron
+Carnegie Mellon University
+
+This is the home directory for the Tiny server, a 200-line Web
+server that we use in "15-213: Intro to Computer Systems" at Carnegie
+Mellon University.  Tiny uses the GET method to serve static content
+(text, HTML, GIF, and JPG files) out of ./ and to serve dynamic
+content by running CGI programs out of ./cgi-bin. The default 
+page is home.html (rather than index.html) so that we can view
+the contents of the directory from a browser.
+
+Tiny is neither secure nor complete, but it gives students an
+idea of how a real Web server works. Use for instructional purposes only.
+
+The code compiles and runs cleanly using gcc 2.95.3 
+on a Linux 2.2.20 kernel.
+
+To install Tiny:
+   Type "tar xvf tiny.tar" in a clean directory. 
+
+To run Tiny:
+   Run "tiny <port>" on the server machine, 
+	e.g., "tiny 8000".
+   Point your browser at Tiny: 
+	static content: http://<host>:8000
+	dynamic content: http://<host>:8000/cgi-bin/adder?1&2
+
+Files:
+  tiny.tar		Archive of everything in this directory
+  tiny.c		The Tiny server
+  Makefile		Makefile for tiny.c
+  home.html		Test HTML page
+  godzilla.gif		Image embedded in home.html
+  README		This file	
+  cgi-bin/adder.c	CGI program that adds two numbers
+  cgi-bin/Makefile	Makefile for adder.c
+
+// tiny 파일 실행시키는방법
+// gcc -o tiny tiny.c csapp.c -lpthread 컴파일
+// ./tiny 8000
+// curl http://localhost:8000/home.html  다른터미널에 치기
+
+// adder.c 실행방법
+// ./tiny 8000 //서버먼저실행
+// curl -v "http://localhost:8000/cgi-bin/adder?a=숫자&b=숫자" // 치고 Ctrl 누르고 사이트클릭 (숫자 = 아무숫자나 넣을것)
+
+/* 
+1. Tiny 코드 수정해서 요청 라인/헤더 출력
+// 과제 표시해뒀음
+
+2. 브라우저로 정적 파일 요청하고 로그 파일에 저장
+./tiny 8000 | tee output.txt           /터미널에서 실행
+http://127.0.0.1:8000/home.html        /사이트에 켜서 localhost가 아닌 컨테이너라서 주소입력후 들어가면 로그 파일에저장됨
+
+3. 그 로그를 보고 브라우저 HTTP 버전 확인
+GET /home.html HTTP/1.1
+
+4. RFC 2616 참고해서 헤더 의미 정리 */
+/*
+1. GET/... HTTP/1.1 ->요청라인(어떤 리소스를 GET방식으로 요청하는지)
+2. HOST: 요청 대상 서버주소(localhost:8000또는 127.0.0.1:8000)
+3. Connection: keep-alive ->연결을 끊지 않고 유지 요청
+4. User-Agent (
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) 
+AppleWebKit/537.36 (KHTML, like Gecko) 
+Chrome/138.0.0.0 Whale/4.33.325.17 Safari/537.36
+) -> 브라우저 정보
+5. Accept: 받아들일 수 있는 콘텐츠 타입목록(예: HTML,XHTML,XML,이미지 등)
+6. Accept-Encoding:받을수있는압축방식(gzip,deflate,br,zstd)
+7. Accept-Language:선호언어(ko-KR,en-US,en)
+*/
