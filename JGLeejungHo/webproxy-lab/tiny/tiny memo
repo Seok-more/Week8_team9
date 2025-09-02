@@ -11,9 +11,9 @@
 void doit(int fd);
 void read_requesthdrs(rio_t *rp);
 int parse_uri(char *uri, char *filename, char *cgiargs);
-void serve_static(int fd, char *filename, int filesize,int is_head);
+void serve_static(int fd, char *filename, int filesize);
 void get_filetype(char *filename, char *filetype);
-void serve_dynamic(int fd, char *filename, char *cgiargs, int is_head);
+void serve_dynamic(int fd, char *filename, char *cgiargs);
 void clienterror(int fd, char *cause, char *errnum, char *shortmsg, char *longmsg);
 
 int main(int argc, char **argv)
@@ -54,12 +54,11 @@ void doit(int fd){
   printf("Request headers:\n");
   printf("%s", buf);
   sscanf(buf, "%s %s %s", method, uri, version);
-
-  if (strcasecmp(method, "GET") && strcasecmp(method, "HEAD")){ //만약 클라이언트가 다른메소드를 요청하면 // GET이아니고 HEAD도 아니라면  11-11
+  
+  if (strcasecmp(method, "GET")){ //만약 클라이언트가 다른메소드를 요청하면 
     clienterror(fd, method, "501", "Not implemented", "Tiny does not implement this method"); //에러 메시지를 보내고
     return; //main루틴으로 돌아온다 //그리고 돌아가면 연결을 닫고 다음연결요청을 기다린다
   }
-  int is_head = (strcasecmp(method, "HEAD") == 0); //HEAD메소드 확인 //11-11
   read_requesthdrs(&rio); // 올바른 요청을하면 다른요청헤더들을 무시한다
 
   is_static = parse_uri(uri, filename, cgiargs); //URI를 파일이름과 비어있을수도있는 CGI인자 스트링으로 분석하고 요청이 정적 또는 동적 컨텐츠를 위한것인지 나타내는 플래그를설정
@@ -73,14 +72,14 @@ void doit(int fd){
       clienterror(fd, filename, "403", "Forbidden", "Tiny couldn't read the file");
       return;
     }
-    serve_static(fd, filename, sbuf.st_size, is_head); //  정적 컨텐츠를 클라이언트에게 제공한다
+    serve_static(fd, filename, sbuf.st_size); //  정적 컨텐츠를 클라이언트에게 제공한다
   }
   else{
     if (!(S_ISREG(sbuf.st_mode)) || !(S_IXUSR & sbuf.st_mode)) { // 만일 요청이 동적 컨텐츠에 대한것이라면 이파일이 실행 가능한지 검증
       clienterror(fd, filename, "403", "Forbidden","Tiny couldn't run the CGI program");
       return;
     }
-    serve_dynamic(fd, filename, cgiargs, is_head); //만일 그렇다면 동적컨텐츠를 제공
+    serve_dynamic(fd, filename, cgiargs); //만일 그렇다면 동적컨텐츠를 제공
   }
 }
 
@@ -144,7 +143,7 @@ int parse_uri(char *uri, char *filename, char *cgiargs){
   }
 }
 
-void serve_static(int fd, char *filename, int filesize,int is_head){ //TINY는 다섯개의 서로다른 정적컨텐츠타입을 지원한다:HTML파일,무형식텍스트파일 ,GIF,PNG,JPEG 으로 인코딩된영상
+void serve_static(int fd, char *filename, int filesize){ //TINY는 다섯개의 서로다른 정적컨텐츠타입을 지원한다:HTML파일,무형식텍스트파일 ,GIF,PNG,JPEG 으로 인코딩된영상
   int srcfd;
   char *srcp, filetype[MAXLINE], buf[MAXBUF];
 
@@ -157,14 +156,12 @@ void serve_static(int fd, char *filename, int filesize,int is_head){ //TINY는 �
   Rio_writen(fd, buf, strlen(buf));
   printf("Response headers : \n");
   printf("%s", buf);
-  
-  if(!is_head){ //11-11
-    srcfd = Open(filename, O_RDONLY, 0); // 읽기위해서 filename을 오픈하고 식별자를 얻어온다 //리눅스 mmap함수는 요청한 파일을 가상메모리 영역으로 매핑한다 
-    srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);   //mmap을 호출하면 파일srcfd의 filesize바이트를 주소srcp에서시작하는 사적읽기 허용 가상메모리영역으로 매핑한다
-    Close(srcfd); //파일을 메모리로 매핑한후에 더이상 이식별자는 필요없으며 그래서 이파일을 닫는다 //안그러면 치명적일수있는 메모리누수가 발생할수있다
-    Rio_writen(fd, srcp, filesize); //실제로 파일을 클라이언트에게 전송한다
-    Munmap(srcp, filesize); //매핑된 가상메모리 주소를 반환한다. 이것은 치명적일수있는 메모리 누수를 피하는데 중요하다
-  }
+
+  srcfd = Open(filename, O_RDONLY, 0); // 읽기위해서 filename을 오픈하고 식별자를 얻어온다 //리눅스 mmap함수는 요청한 파일을 가상메모리 영역으로 매핑한다 
+  srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);   //mmap을 호출하면 파일srcfd의 filesize바이트를 주소srcp에서시작하는 사적읽기 허용 가상메모리영역으로 매핑한다
+  Close(srcfd); //파일을 메모리로 매핑한후에 더이상 이식별자는 필요없으며 그래서 이파일을 닫는다 //안그러면 치명적일수있는 메모리누수가 발생할수있다
+  Rio_writen(fd, srcp, filesize); //실제로 파일을 클라이언트에게 전송한다
+  Munmap(srcp, filesize); //매핑된 가상메모리 주소를 반환한다. 이것은 치명적일수있는 메모리 누수를 피하는데 중요하다
 }
 
 void get_filetype(char *filename, char *filetype){ // Derive file type from filename
@@ -185,18 +182,13 @@ void get_filetype(char *filename, char *filetype){ // Derive file type from file
   }
 }
 
-void serve_dynamic(int fd, char *filename, char *cgiargs, int is_head){
+void serve_dynamic(int fd, char *filename, char *cgiargs){
   char buf [MAXLINE], *emptylist[] = { NULL };
 
   sprintf(buf, "HTTP/1.0 200 OK\r\n");
   Rio_writen(fd, buf, strlen(buf));
   sprintf(buf, "Server: Tiny Web Server\r\n");
   Rio_writen(fd, buf, strlen(buf));
-
-  if (is_head){ //11-11
-    return; /*HTTP프로토콜에서 HEAD메서드는 HEAD요청은 GGET요청과 동인한 응답헤더를 가져오지만, 응답본문은 포함하지않는다.*/
-    // 그래서 본문출력없이 종료
-  }
 
   if(Fork() == 0){ //새로운 자식 프로세스를 fork한다
     setenv("QUERY_STRING", cgiargs, 1); //자식은 QUERY_STRING 환경변수를 요청 URI의CGI인자들을 초기화한다
