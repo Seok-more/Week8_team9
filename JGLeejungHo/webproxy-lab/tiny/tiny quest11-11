@@ -194,11 +194,6 @@ void serve_dynamic(int fd, char *filename, char *cgiargs, int is_head){
   Rio_writen(fd, buf, strlen(buf));
 
   if (is_head){
-    char buf[MAXLINE];
-    sprintf(buf, "HTTP/1.0 200 OK\r\n");
-    Rio_writen(fd, buf, strlen(buf));
-    sprintf(buf, "Server: Tiny Web Server\r\n\r\n");
-    Rio_writen(fd, buf, strlen(buf));
     return; /*HTTP프로토콜에서 HEAD메서드는 HEAD요청은 GGET요청과 동인한 응답헤더를 가져오지만, 응답본문은 포함하지않는다.*/
     // 그래서 본문출력없이 종료
   }
